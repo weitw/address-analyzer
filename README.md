@@ -8,7 +8,7 @@
 
 - 由于直辖市比较特殊，所以代码中默认给直辖市增加一个“xx城区”，作为市。例如北京市朝阳区，可以变成北京市北京城区朝阳区。这个可以配置。
   
-  ![](E:\screenshot\2023-06-17-10-57-40-image.png)
+  ![image](https://github.com/weitw/address-analyzer/assets/41028506/d1e76d58-4f1a-4734-978f-32c11adf218b)
   
   这里面的110000就是北京市的代码，给其增加一个子级即可。这里也可以根据自己项目的要求去修改，比如改成北京辖区等。
 
@@ -18,7 +18,8 @@
   
   例如：内蒙古自治区，常用的白话集合是：内蒙古自治区、内蒙古、内蒙。所以还增加了一个特殊地址白话JSON文件：`vernacularProvinceCityCounty.json`，
   
-  ![](E:\screenshot\2023-06-17-11-05-48-image.png)。这里只列举了一部分，如果遇到其他特殊的地址，在这个地方加上即可。
+  ![image](https://github.com/weitw/address-analyzer/assets/41028506/c394a341-1f59-4872-9c87-d71472d44f99)
+这里只列举了一部分，如果遇到其他特殊的地址，在这个地方加上即可。
 
 # 二、测试案例
 
@@ -38,7 +39,7 @@
 > 镇江市句容市崇明西路与玉清路交叉路口西侧(玉清小区)
 > 北京朝阳方恒国际中心A座2601号
 
-![](E:\screenshot\2023-06-16-18-00-04-image.png)
+![image](https://github.com/weitw/address-analyzer/assets/41028506/81667fca-56f2-4ac9-9701-1179b9551fc4)
 
 # 三、使用方法及注意事项
 
