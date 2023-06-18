@@ -20,6 +20,12 @@
 
   ![image](https://github.com/weitw/address-analyzer/assets/41028506/c394a341-1f59-4872-9c87-d71472d44f99)
   。这里只列举了一部分，如果遇到其他特殊的地址，在这个地方加上即可。
+## 2、关于性能
+
+解析时，会读取address.json文件，并根据省市区的关系构建相应的map集合。如果频繁的去读取address.json文件，肯定会消耗不小的资源的，所以可以一次读取，放到缓存中，下次要解析时直接从内存中拿出需要的数据即可。代码中只是使用类的静态属性，并采用单例的方式，确保类只会加载一次，保证address.json文件只会读取一次。
+![image](https://github.com/weitw/address-analyzer/assets/41028506/49aea299-d6b5-4bdd-8feb-615a5b059055)
+
+实际应用时，可以将数据放到Redis中。
 
 # 二、测试案例
 
