@@ -239,20 +239,6 @@ public class AddressAnalyzer {
         deduce(addressVO);  // 推算
         // 地址解析是否成功
         addressVO.setSuccess(true);
-        if (addressVO.getProvince() == null) {
-            String str = StringConvertUtils.concatStringBySeparator("", addressVO.getCity(), addressVO.getCounty(), addressVO.getAddress());
-            addressVO.setCity(null);
-            addressVO.setCounty(null);
-            addressVO.setAddress(str);
-            addressVO.setSuccess(false);
-        }
-        if (addressVO.getCity() == null) {
-            String str = StringConvertUtils.concatStringBySeparator("", addressVO.getCounty(), addressVO.getAddress());
-            addressVO.setCounty(null);
-            addressVO.setAddress(str);
-            addressVO.setSuccess(false);
-        }
-
         return addressVO;
     }
 
