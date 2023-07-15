@@ -158,8 +158,8 @@ public class AddressAnalyzer {
                         flag1 = false;
                     }
                     // 配置中的特殊市，白话
-                    if (flag1 && vernacularCityConfig.containsKey(pname)) {
-                        citys.addAll(vernacularCityConfig.get(pname));
+                    if (flag1 && vernacularCityConfig.containsKey(cityName)) {
+                        citys.addAll(vernacularCityConfig.get(cityName));
                         flag1 = false;
                     }
                     if (sourceMap.containsKey(cityCode)) {
@@ -177,8 +177,8 @@ public class AddressAnalyzer {
                                 flag2 = false;
                             }
                             // 配置中的特殊区，白话
-                            if (flag2 && vernacularCountyConfig.containsKey(pname)) {
-                                countys.addAll(vernacularCountyConfig.get(pname));
+                            if (flag2 && vernacularCountyConfig.containsKey(countyName)) {
+                                countys.addAll(vernacularCountyConfig.get(countyName));
                                 flag2 = false;
                             }
                         });
