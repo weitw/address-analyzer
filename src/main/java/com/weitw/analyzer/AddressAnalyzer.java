@@ -2,7 +2,6 @@ package com.weitw.analyzer;
 
 import cn.hutool.json.JSONObject;
 import com.weitw.analyzer.domain.Address;
-import com.weitw.analyzer.utils.StringConvertUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
