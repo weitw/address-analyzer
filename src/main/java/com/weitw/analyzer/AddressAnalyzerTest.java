@@ -1,5 +1,7 @@
 package com.weitw.analyzer;
 
+import com.weitw.analyzer.domain.Address;
+
 import java.util.ArrayList;
 import java.util.List;
 

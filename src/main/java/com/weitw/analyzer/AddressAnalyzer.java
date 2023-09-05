@@ -1,14 +1,13 @@
 package com.weitw.analyzer;
 
 import cn.hutool.json.JSONObject;
+import com.weitw.analyzer.domain.Address;
+import com.weitw.analyzer.utils.StringConvertUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 地址解析
@@ -19,6 +18,7 @@ import java.util.Map;
 
 public class AddressAnalyzer {
 
+    private static final String ROOT_KEY = "100000";
     private static Map<String, Map<String, List<String>>> provinceCityCounty = null;
     private static Map<String, List<String>> cityCounty = null;
     // 所有省份，包括模糊的
@@ -56,7 +56,9 @@ public class AddressAnalyzer {
         }
 
         provinceCityCounty = analyzerProvinceCityCounty(jsonObject);
-        cityCounty = analyzerCityCounty(jsonObject);
+        cityCounty = new HashMap<>();
+        provinceCityCounty.forEach((k, v) -> cityCounty.putAll(v));
+//        cityCounty = analyzerCityCounty(jsonObject);
         Map<String, List<String>> fuzzyProvinceCityCounty = analyzerFuzzyProvinceCityCounty(jsonObject);
 
         // >>>>>>>>>>>>>>build
@@ -73,7 +75,7 @@ public class AddressAnalyzer {
      */
     private Map<String, Map<String, List<String>>> analyzerProvinceCityCounty(Map<String, Object> sourceMap) {
         Map<String, Map<String, List<String>>> provinceCityCounty = new HashMap<>();
-        Map<String, String> provinceMap = (Map<String, String>) sourceMap.get("100000");
+        Map<String, String> provinceMap = (Map<String, String>) sourceMap.get(ROOT_KEY);
         provinceMap.forEach((pcode, pname) -> {
             // 省
             provinceCityCounty.putIfAbsent(pname, new HashMap<>());
@@ -125,62 +127,20 @@ public class AddressAnalyzer {
         List<String> provinces = new ArrayList<>(80);
         List<String> citys = new ArrayList<>(700);
         List<String> countys = new ArrayList<>(5900);
-        Map<String, String> provinceMap = (Map<String, String>) sourceMap.get("100000");
+        Map<String, String> provinceMap = (Map<String, String>) sourceMap.get(ROOT_KEY);
         provinceMap.forEach((pcode, pname) -> {
             // 省
-            boolean flag = true;
-            provinces.add(pname);
-            if (flag && pname.endsWith("省") || pname.endsWith("市")) {
-                provinces.add(pname.substring(0, pname.length() - 1));
-                flag = false;
-            }
-            if (flag && pname.endsWith("特别行政区")) {
-                provinces.add(pname.substring(0, pname.length() - 5));
-                flag = false;
-            }
-            // 配置中的特殊省份白话
-            if (flag && vernacularProvinceConfig.containsKey(pname)) {
-                provinces.addAll(vernacularProvinceConfig.get(pname));
-                flag = false;
-            }
+            provinces.addAll(splitProvince(pname, vernacularProvinceConfig));
             if (sourceMap.containsKey(pcode)) {
                 // 市
                 Map<String, String> cityMap = (Map<String, String>) sourceMap.get(pcode);
                 cityMap.forEach((cityCode, cityName) -> {
-                    boolean flag1 = true;
-                    citys.add(cityName);
-                    if (flag1 && cityName.endsWith("市")) {
-                        citys.add(cityName.substring(0, cityName.length() - 1));
-                        flag1 = false;
-                    }
-                    if (flag1 && pname.endsWith("地区") || pname.endsWith("城区") || pname.endsWith("郊县")) {
-                        citys.add(pname.substring(0, pname.length() - 2));
-                        flag1 = false;
-                    }
-                    // 配置中的特殊市，白话
-                    if (flag1 && vernacularCityConfig.containsKey(pname)) {
-                        citys.addAll(vernacularCityConfig.get(pname));
-                        flag1 = false;
-                    }
+                    citys.addAll(splitCity(cityName, vernacularCityConfig));
                     if (sourceMap.containsKey(cityCode)) {
                         // 区
                         Map<String, String> countyMap = (Map<String, String>) sourceMap.get(cityCode);
                         countyMap.forEach((countyCode, countyName) -> {
-                            boolean flag2 = true;
-                            countys.add(countyName);
-                            if (countyName.endsWith("市") || countyName.endsWith("区") || countyName.endsWith("县")) {
-                                countys.add(countyName.substring(0, countyName.length() - 1));
-                                flag2 = false;
-                            }
-                            if (flag2 && countyName.endsWith("自治县") || countyName.endsWith("自治州")) {
-                                countys.add(countyName.substring(0, countyName.length() - 3));
-                                flag2 = false;
-                            }
-                            // 配置中的特殊区，白话
-                            if (flag2 && vernacularCountyConfig.containsKey(pname)) {
-                                countys.addAll(vernacularCountyConfig.get(pname));
-                                flag2 = false;
-                            }
+                            countys.addAll(splitCounty(countyName, vernacularCountyConfig));
                         });
                     }
                 });
@@ -197,13 +157,86 @@ public class AddressAnalyzer {
     }
 
     /**
+     * 获取省份的白话列表。例如贵州省可以拆分为贵州
+     * @param provinceName 省份自治区或者直辖市名称
+     * @param vernacularProvinceConfig 单独的省份白话配置
+     * @return 拆分后的结果
+     */
+    private List<String> splitProvince(String provinceName, Map<String, List<String>> vernacularProvinceConfig) {
+        List<String> provinces = new ArrayList<>();
+        provinces.add(provinceName);
+        if (provinceName.endsWith("省") || provinceName.endsWith("市")) {
+            provinces.add(provinceName.substring(0, provinceName.length() - 1));
+            return provinces;
+        }
+        if (provinceName.endsWith("特别行政区")) {
+            provinces.add(provinceName.substring(0, provinceName.length() - 5));
+            return provinces;
+        }
+        // 配置中的特殊省份白话
+        if (vernacularProvinceConfig.containsKey(provinceName)) {
+            provinces.addAll(vernacularProvinceConfig.get(provinceName));
+        }
+        return provinces;
+    }
+
+    /**
+     * 获取市的白话列表。例如南京市可以拆分为南京
+     * @param cityName 市
+     * @param vernacularCityConfig 单独的市白话配置
+     * @return 拆分后的结果
+     */
+    private List<String> splitCity(String cityName, Map<String, List<String>> vernacularCityConfig) {
+        List<String> citys = new ArrayList<>();
+        citys.add(cityName);
+        if (cityName.endsWith("市")) {
+            citys.add(cityName.substring(0, cityName.length() - 1));
+            return citys;
+        }
+        if (cityName.endsWith("地区") || cityName.endsWith("城区") || cityName.endsWith("郊县")) {
+            citys.add(cityName.substring(0, cityName.length() - 2));
+            return citys;
+        }
+        // 配置中的特殊市白话
+        if (vernacularCityConfig.containsKey(cityName)) {
+            citys.addAll(vernacularCityConfig.get(cityName));
+        }
+        return citys;
+    }
+
+    /**
+     * 获取区的白话列表。例如江宁区可以拆分为江宁
+     * @param countyName 区
+     * @param vernacularCountyConfig 单独的区白话配置
+     * @return 拆分后的结果
+     */
+    private List<String> splitCounty(String countyName, Map<String, List<String>> vernacularCountyConfig) {
+        List<String> countys = new ArrayList<>();
+        countys.add(countyName);
+        if (countyName.endsWith("市") || countyName.endsWith("区") || countyName.endsWith("县")) {
+            countys.add(countyName.substring(0, countyName.length() - 1));
+            return countys;
+        }
+        if (countyName.endsWith("自治县") || countyName.endsWith("自治州")) {
+            countys.add(countyName.substring(0, countyName.length() - 3));
+            return countys;
+        }
+        // 配置中的特殊区白话
+        if (vernacularCountyConfig.containsKey(countyName)) {
+            countys.addAll(vernacularCountyConfig.get(countyName));
+        }
+        return countys;
+    }
+
+    /**
      * 得到所有市和区的关系
      *
      * @param sourceMap json文件源数据
      * @return {@link Map}<{@link String}, {@link List}<{@link String}>>
      */
+    @Deprecated
     private Map<String, List<String>> analyzerCityCounty(Map<String, Object> sourceMap) {
-        Map<String, Object> provinceMap = (Map<String, Object>) sourceMap.get("100000");
+        Map<String, Object> provinceMap = (Map<String, Object>) sourceMap.get(ROOT_KEY);
         Map<String, List<String>> cityCountyMap = new HashMap<>();
         provinceMap.forEach((pcode, pname) -> {
             if (sourceMap.containsKey(pcode)) {

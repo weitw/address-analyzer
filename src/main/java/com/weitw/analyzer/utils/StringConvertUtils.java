@@ -1,4 +1,4 @@
-package com.weitw.analyzer;
+package com.weitw.analyzer.utils;
 
 import org.apache.commons.lang3.StringUtils;
 
