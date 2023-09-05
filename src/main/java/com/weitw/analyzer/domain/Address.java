@@ -1,4 +1,4 @@
-package com.weitw.analyzer;
+package com.weitw.analyzer.domain;
 
 public class Address {
     /**
